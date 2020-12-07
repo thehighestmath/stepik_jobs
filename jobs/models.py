@@ -1,13 +1,13 @@
+from django.contrib.auth.models import User
 from django.db import models
 from tinymce import models as tinymce_models
 
 MAX_LENGTH = 255
 
 
-# Create your models here.
 class Specialty(models.Model):
     title = models.CharField(verbose_name='Название', max_length=MAX_LENGTH)
-    picture = models.URLField(default='https://place-hold.it/100x60')
+    picture = models.ImageField(default='https://place-hold.it/100x60')
     code = models.CharField(verbose_name='Код', max_length=MAX_LENGTH)
 
     class Meta:
@@ -21,9 +21,10 @@ class Specialty(models.Model):
 class Company(models.Model):
     name = models.CharField(verbose_name='Название', max_length=MAX_LENGTH)
     location = models.CharField(verbose_name='Город', max_length=MAX_LENGTH)
-    logo = models.URLField(default='https://place-hold.it/100x60')
+    logo = models.ImageField(default='https://place-hold.it/100x60')
     description = models.TextField(verbose_name='Информация о компании')
     employee_count = models.IntegerField(verbose_name='Количество сотрудников')
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = 'Компания'
@@ -49,3 +50,18 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Application(models.Model):
+    written_username = models.CharField(verbose_name='Имя', max_length=MAX_LENGTH)
+    written_phone = models.CharField(verbose_name='Телефон', max_length=MAX_LENGTH)
+    written_cover_letter = models.TextField()
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
+
+    class Meta:
+        verbose_name = 'Отклик'
+        verbose_name_plural = 'Отклики'
+
+    def __str__(self):
+        return self.vacancy

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'jobs',
     'tinymce',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -120,3 +121,4 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+LOGIN_REDIRECT_URL = '/'
