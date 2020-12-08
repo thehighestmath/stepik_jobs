@@ -1,5 +1,6 @@
-from django.urls import path
+from django.urls import path, re_path
 from .views import *
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -9,9 +10,8 @@ urlpatterns = [
     path('vacancies/<int:id>/', VacancyView.as_view(), name='vacancy'),
 
     path('vacancies/<int:id>/send/', SendView.as_view(), name='send'),
-    path('mycompany/', MyCompany.as_view(), name='my_company'),
-    path('mycompany/vacancies/', MyVacancies.as_view(), name='my_vacancies'),
-    path('mycompany/vacancies/<int:id>/', MyVacancy.as_view(), name='my_vacancy'),
+    re_path(r'^mycompany/(?P<state>create)?$', MyCompany.as_view(), name='my_company'),
+    re_path(r'^mycompany/vacancies/(?P<id>\d+)?$', MyVacancies.as_view(), name='my_vacancies'),
 
     path('login/', MyLoginView.as_view(), name='login'),
     path('register/', RegisterView.as_view(), name='register'),

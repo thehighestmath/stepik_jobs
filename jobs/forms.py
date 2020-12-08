@@ -1,5 +1,7 @@
+from string import Template
+
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Layout, HTML
 from django import forms
 from django.contrib.auth.models import User
 
@@ -30,12 +32,19 @@ from django.contrib.auth.models import User
 
 
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.utils.safestring import mark_safe
+
+from jobs.models import Company, Vacancy, Application
+from stepik_jobs.settings import MEDIA_URL
 
 
-class UserForm(UserCreationForm):
+class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name']
+        labels = {
+            'username': 'Логин',
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -54,7 +63,69 @@ class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-
+        self.fields['username'].label = "Логин"
         self.helper.add_input(Submit(
             'submit', 'Войти', css_class='btn btn-primary btn-lg btn-block'
+        ))
+
+
+class PictureWidget(forms.widgets.Widget):
+    def render(self, name, value, attrs=None, **kwargs):
+        html = Template("""<img style="max-width: 120px;height: auto;" src="/$media$link"/>""")
+        return mark_safe(html.substitute(media=MEDIA_URL, link=value))
+
+
+class CompanyForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = ('name', 'logo', 'employee_count', 'location', 'description')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit(
+            'submit', 'Сохранить', css_class='btn btn-block btn-info'
+        ))
+        default_url = 'https://place-hold.it/100x60'
+        if args[0].get('logo') != default_url:
+            url = f"{MEDIA_URL}{args[0].get('logo')}"
+        else:
+            url = default_url
+        self.helper.layout = Layout(
+            'name',
+            'logo',
+            HTML(f"""
+            <img class="img-responsive" src="{url}" style="max-width: 120px;height: auto;">
+            """, ),
+            'employee_count',
+            'location',
+            'description',
+
+        )
+
+
+class VacancyForm(forms.ModelForm):
+    class Meta:
+        model = Vacancy
+        fields = ('title', 'specialty', 'skills',
+                  'salary_min', 'salary_max', 'description')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit(
+            'submit', 'Сохранить', css_class='btn btn-block btn-info'
+        ))
+
+
+class ApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ('written_username', 'written_phone', 'written_cover_letter')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit(
+            'submit', 'Отправить', css_class='btn btn-block btn-info'
         ))

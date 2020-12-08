@@ -1,4 +1,5 @@
 {% extends 'jobs/base.html' %}
+{% load crispy_forms_tags %}
 {% load humanize %}
 {% block main %}
 
@@ -25,9 +26,14 @@
                             {{ vacancy.description }}
                         {% endautoescape %}
                     </div>
-                    <form action="/echo" class="card mt-4 mb-3" enctype="multipart/form-data">
+                    <form method="post" action="{% url 'send' vacancy.id %}" class="card mt-4 mb-3"
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
                         <div class="card-body mx-3">
                             <p class="h5 mt-3 font-weight-normal">Отозваться на вакансию</p>
+                            {% crispy send_form 'bootstrap4' %}
+
+
                             <div class="form-group">
                                 <label class="mb-1 mt-2" for="userName">Вас зовут</label>
                                 <input class="form-control" type="text" placeholder="" id="userName">
