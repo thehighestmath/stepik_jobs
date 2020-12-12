@@ -1,12 +1,13 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render, redirect
 from django.views import View
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 
 from .forms import RegisterForm, LoginForm, CompanyForm, VacancyForm, ApplicationForm
-from .models import Vacancy, Company, Specialty
+from .models import Vacancy, Company, Specialty, Application
 from django.contrib.auth.models import User
 
 
@@ -20,6 +21,22 @@ class HomeView(View):
             'companies': companies,
             'specialities': specialities
         })
+
+
+class SearchView(ListView):
+    model = Vacancy
+    template_name = 'jobs/search.html'
+
+    def get_queryset(self):  # новый
+        query = self.request.GET.get('q')
+        object_list = Vacancy.objects.filter(
+            Q(title__icontains=query) |
+            Q(specialty__title__icontains=query) |
+            Q(company__name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(skills__icontains=query)
+        )
+        return object_list
 
 
 class VacanciesView(View):
@@ -143,7 +160,8 @@ class MyVacancies(View):
                 vacancy_form = VacancyForm(vacancy.__dict__)
                 return render(request, 'jobs/vacancy-edit.html', {
                     'vacancy': vacancy,
-                    'vacancy_form': vacancy_form
+                    'vacancy_form': vacancy_form,
+                    'applications': Application.objects.filter(vacancy=vacancy)
                 })
         vacancies = Vacancy.objects.filter(company__owner=request.user)
         return render(request, 'jobs/vacancy-list.html', {
